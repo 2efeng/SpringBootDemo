@@ -1,0 +1,98 @@
+import java.text.SimpleDateFormat
+
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.springframework.boot' version '3.2.1'
+    id 'io.spring.dependency-management' version '1.1.4'
+
+}
+
+group = 'com.hzf'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+    implementation 'com.alibaba.fastjson2:fastjson2:2.0.44'
+
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'com.alibaba:druid-spring-boot-starter:1.2.20'
+    implementation 'mysql:mysql-connector-java:8.0.33'
+    implementation 'com.mysql:mysql-connector-j:8.2.0'
+
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+}
+
+
+bootJar {
+    manifest {
+        attributes(
+                'Built-By': System.properties['user.name'],
+                'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+                'Build-Revision': version,
+                'Implementation-Title': 'UOP data Service',
+                'Implementation-Version': version,
+                'Created-By': "Gradle ${gradle.gradleVersion}",
+                'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+                'Build-OS': "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+        )
+    }
+
+    mainClassName = 'com.hzf.auth.AuthApplication'
+}
+compileJava.dependsOn(processResources)
+
+
+tasks.register('copyJar', Copy) {
+    delete project.layout.buildDirectory.file("libs/libs").get().asFile.path
+    from configurations.runtimeClasspath
+    into project.layout.buildDirectory.file("libs/libs").get().asFile.path
+    from configurations.compileClasspath
+    into project.layout.buildDirectory.file("libs/libs").get().asFile.path
+}
+
+tasks.register('copyResources', Copy) {
+    delete project.layout.buildDirectory.file("libs/config").get().asFile.path
+    from('src/main/resources')
+    into 'build/libs/config'
+}
+
+tasks.register('makeJar') {
+    dependsOn compileJava
+    dependsOn processResources
+    dependsOn classes
+    dependsOn bootJar{
+        excludes = ["*.jar", "*.properties", "*.xml", "*.yaml"] //excludes = ["*.properties", "*.xml", "*.yml"] //
+        dependsOn copyJar
+        dependsOn copyResources
+        manifest {
+            attributes(
+                    'Built-By': System.properties['user.name'],
+                    'Build-Timestamp': new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+                    'Build-Revision': version,
+                    'Implementation-Title': 'UOP Frontend Service',
+                    'Implementation-Version': version,
+                    'Created-By': "Gradle ${gradle.gradleVersion}",
+                    'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+                    'Build-OS': "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
+                    'Class-Path': 'config/ ' + configurations.compileClasspath.files.collect { "libs/$it.name" }.join(' ') + ' '+ configurations.runtimeClasspath.files.collect { "libs/$it.name" }.join(' ')
+            )
+        }
+    }
+}

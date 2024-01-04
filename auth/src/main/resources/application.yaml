@@ -1,0 +1,17 @@
+server.port: 8080
+
+spring:
+  jpa.properties.hibernate.hbm2ddl.auto: update
+  datasource:
+    url: jdbc:mysql://127.0.0.1:4406/myapi
+    username: root
+    password: MYSQL1qw23e...
+    type: com.alibaba.druid.pool.DruidDataSource
+    initial-size: 5
+    min-idle: 5
+    max-active: 20
+    max-wait: 60000
+    filters: stat,wall
+    pool-prepared-statements: true
+    max-pool-prepared-statement-per-connection-size: 20
+    use-global-data-source-stat: false
