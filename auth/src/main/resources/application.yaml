@@ -15,3 +15,20 @@ spring:
     pool-prepared-statements: true
     max-pool-prepared-statement-per-connection-size: 20
     use-global-data-source-stat: false
+
+wechat:
+  url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=%s
+  webhook: 08b8f4c7-3244-4bbc-adf0-21c16c516955
+
+#spring.task.execution.pool:
+#  core-size=5
+#  max-size=10
+#  queue-capacity=25
+#  keep-alive=30
+
+logging:
+  file:
+    name: logs\auth.log
+  level:
+    com.hzf.auth: DEBUG
+    root: ERROR

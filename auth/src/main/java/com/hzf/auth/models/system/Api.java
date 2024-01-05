@@ -26,4 +26,9 @@ public class Api {
 
     private String methodName;
 
+    @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(name = "sys_permission")
+    @OrderBy("roleSort ASC")
+    private List<Role> roles;
+
 }

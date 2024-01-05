@@ -1,9 +1,14 @@
 package com.hzf.auth.config;
 
+import com.hzf.auth.models.system.Api;
+import com.hzf.auth.models.system.Role;
 import com.hzf.auth.models.system.User;
-import com.hzf.auth.security.JWTAuthenticationFilter;
+import com.hzf.auth.repository.system.ApiRepository;
+import com.hzf.auth.security.JwtAuthFilter;
 import com.hzf.auth.security.LoginUser;
 import com.hzf.auth.service.system.UserService;
+import jakarta.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,20 +27,36 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class SecurityConfig {
 
     @Autowired
     UserService userService;
 
+    @Autowired
+    ApiRepository apiRepository;
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public WebMvcConfigurer webMvcConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addInterceptors(@Nonnull InterceptorRegistry registry) {
+                registry.addInterceptor(new RequestLoggingAspect()).addPathPatterns("/api/**");
+            }
+        };
+    }
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -68,31 +89,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        List<Api> apis = apiRepository.findAll();
         http.csrf(AbstractHttpConfigurer::disable);
         http.httpBasic(AbstractHttpConfigurer::disable);
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.authorizeHttpRequests((authorize) ->
-
-                authorize.anyRequest().authenticated()
-        );
-        http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(new JWTAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.authorizeHttpRequests((authorize) -> {
+            for (Api api :apis){
+                for (Role role : api.getRoles()){
+                    authorize.requestMatchers(api.getPath()).hasRole(role.getRoleName());
+                }
+            }
+            authorize.anyRequest().authenticated();
+        });
+        http.authenticationManager(authenticationManager());
+        http.addFilterBefore(new JwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
-                .requestMatchers("/api/auth/login")
-                .requestMatchers("/api/auth/logout")
-                .requestMatchers("/swagger-ui/**")
-                .requestMatchers("/swagger-ui.html")
-                .requestMatchers("/swagger-ui")
-                .requestMatchers("/doc.html")
-                .requestMatchers("/swagger-resources")
-                .requestMatchers("/v3/api-docs/**")
-                .requestMatchers("/favicon.ico")
-                .requestMatchers("/error");
+        return (web) -> web.ignoring().requestMatchers("/api/auth/login").requestMatchers("/api/auth/logout").requestMatchers("/swagger-ui/**").requestMatchers("/swagger-ui.html").requestMatchers("/swagger-ui").requestMatchers("/doc.html").requestMatchers("/swagger-resources").requestMatchers("/v3/api-docs/**").requestMatchers("/favicon.ico").requestMatchers("/error");
     }
 
 

@@ -25,7 +25,7 @@ public class User implements Serializable {
     private byte status;
     private byte gender;
 
-    @ManyToMany(cascade = {CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(name = "sys_user_role")
     @OrderBy("roleSort ASC")
     private List<Role> roles;

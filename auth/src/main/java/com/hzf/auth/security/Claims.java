@@ -131,6 +131,7 @@ public class Claims {
         return permissions;
     }
 
+
     public void setPermissions(List<String> permissions) {
         this.permissions = permissions;
     }

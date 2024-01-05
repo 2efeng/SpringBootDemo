@@ -58,6 +58,6 @@ public class RequestLoggingAspect implements HandlerInterceptor {
                 request.getQueryString(),
                 status,
                 duration);
-        if (log.isDebugEnabled()) log.debug(logMsg);
+        log.debug(logMsg);
     }
 }

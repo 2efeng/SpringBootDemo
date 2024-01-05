@@ -54,6 +54,7 @@ public class ApiRunner implements CommandLineRunner {
             Api api = new Api();
             String key = path + "|" + method;
             if (existingApiPaths.containsKey(key)) {
+                api.setRoles(existingApiPaths.get(key).getRoles());
                 api.setId(existingApiPaths.get(key).getId());
                 existingApiPaths.remove(key);
             }

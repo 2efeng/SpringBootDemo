@@ -14,9 +14,9 @@ import java.util.UUID;
  * @author : zy
  * JWT工具类
  */
-public class JWTUtil {
+public class JwtUtil {
 
-    private static final String secret = "xpo1xgnl5ksinxkgu1nb6vcx3zaq1wsxvv";
+    private static final String secret = "8e&TVVsM!5)m&537gAj=PX3)%2H!A_2bjz)GUN7e";
 
     private static final long EXPIRE = 1000 * 60 * 60 * 12;
 
